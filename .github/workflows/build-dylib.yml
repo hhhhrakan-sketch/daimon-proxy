@@ -1,0 +1,38 @@
+name: Build DaimonTweak.dylib
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile DaimonTweak.dylib (iOS ARM64)
+        run: |
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          xcrun clang \
+            -arch arm64 \
+            -isysroot "$SDK" \
+            -mios-version-min=14.0 \
+            -framework Foundation \
+            -framework UIKit \
+            -lobjc \
+            -dynamiclib \
+            -install_name @rpath/DaimonTweak.dylib \
+            -o DaimonTweak.dylib \
+            DaimonTweak.m
+          echo "تم التصريف"
+          ls -lh DaimonTweak.dylib
+
+      - name: Upload DaimonTweak.dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: DaimonTweak-dylib
+          path: DaimonTweak.dylib
+          retention-days: 30
